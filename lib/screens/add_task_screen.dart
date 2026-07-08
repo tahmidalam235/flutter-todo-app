@@ -35,6 +35,32 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       descriptionController.text = widget.task["description"] ?? "";
       category = widget.task["category"];
       priority = widget.task["priority"] ?? "Medium";
+      final data = widget.task.data() as Map<String, dynamic>;
+
+      if (data.containsKey("time") &&
+          data["time"] != null &&
+          data["time"] != "No Time") {
+        final parts = data["time"].split(" ");
+        final hm = parts[0].split(":");
+
+        int hour = int.parse(hm[0]);
+        final minute = int.parse(hm[1]);
+
+        if (parts.length > 1 && parts[1] == "PM" && hour != 12) {
+          hour += 12;
+        }
+        if (parts.length > 1 && parts[1] == "AM" && hour == 12) {
+          hour = 0;
+        }
+
+        selectedTime = TimeOfDay(hour: hour, minute: minute);
+      }
+
+      if (data.containsKey("date") && data["date"] != null) {
+        selectedDate = DateTime.parse(data["date"]);
+      } else {
+        selectedDate = DateTime.now();
+      }
     }
   }
   Future<void> pickTime() async {
@@ -61,6 +87,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       setState(() {
         selectedDate = picked;
       });
+
+      print("NEW DATE: $selectedDate");
     }
   }
 
@@ -215,20 +243,20 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
                   } else {
 
-                    await FirebaseFirestore.instance
-                        .collection("tasks")
-                        .doc(widget.task.id)
-                        .update({
+                    final dateToSave =
+                        "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
 
-                      "title": titleController.text.trim(),
-                      "description": descriptionController.text.trim(),
-                      "category": category,
-                      "priority": priority,
-                      "time": selectedTime == null
-                          ? widget.task["time"]
+                    print("Saving -> $dateToSave");
+                    await FirestoreService().updateTaskData(
+                      id: widget.task.id,
+                      title: titleController.text.trim(),
+                      description: descriptionController.text.trim(),
+                      category: category,
+                      priority: priority,
+                      time: selectedTime == null
+                          ? (widget.task["time"] ?? "No Time")
                           : selectedTime!.format(context),
-
-                    });
+                      date: dateToSave,);
 
                   }
 

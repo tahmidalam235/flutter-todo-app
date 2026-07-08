@@ -70,11 +70,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   }
 
                   final docs = snapshot.data!.docs.where((doc) {
-                    final data =
-                    doc.data() as Map<String, dynamic>;
+                    final data = doc.data() as Map<String, dynamic>;
                     return data.containsKey("date") &&
-                        data["date"] == firestoreDate &&
-                        !(data["completed"] ?? false);
+                        data["date"] == firestoreDate;
                   }).toList();
 
                   if (docs.isEmpty) {
@@ -101,16 +99,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor:
-                            Colors.teal.shade50,
+                            backgroundColor: Colors.teal.shade50,
                             child: const Icon(
                               Icons.calendar_today,
                               color: Colors.teal,
                             ),
                           ),
+
                           title: Text(task["title"]),
+
                           subtitle: Text(
-                              "${task["category"]} • ${task["time"]}"),
+                            "${task["category"]} • ${task["time"]}",
+                          ),
+
+                          trailing: Icon(
+                            task["completed"]
+                                ? Icons.check_circle
+                                : Icons.radio_button_unchecked,
+                            color: task["completed"]
+                                ? Colors.green
+                                : Colors.orange,
+                          ),
                         ),
                       );
                     },
