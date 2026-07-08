@@ -20,6 +20,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  int currentIndex = 0;
 String search = "";
 String selectedCategory = "All";
 DateTime _currentTime = DateTime.now();
@@ -50,6 +51,7 @@ String get currentDate =>
 
 String get currentTime =>
     DateFormat('hh:mm a').format(_currentTime);
+
 @override
 Widget build(BuildContext context) {
 return Scaffold(
@@ -69,64 +71,7 @@ builder: (_) => const AddTaskScreen(),
 },
 ),
 
-bottomNavigationBar: NavigationBar(
-selectedIndex: 0,
-onDestinationSelected: (index) {
-switch (index) {
-case 0:
-break;
 
-case 1:
-Navigator.push(
-context,
-MaterialPageRoute(
-builder: (_) => const HomeScreen(),
-),
-);
-break;
-
-case 2:
-Navigator.push(
-context,
-MaterialPageRoute(
-builder: (_) => const CalendarScreen(),
-),
-);
-break;
-
-case 3:
-Navigator.push(
-context,
-MaterialPageRoute(
-builder: (_) => const ProfileScreen(),
-),
-);
-break;
-}
-},
-destinations: const [
-NavigationDestination(
-icon: Icon(Icons.home_outlined),
-selectedIcon: Icon(Icons.home),
-label: "Home",
-),
-NavigationDestination(
-icon: Icon(Icons.task_outlined),
-selectedIcon: Icon(Icons.task),
-label: "Tasks",
-),
-NavigationDestination(
-icon: Icon(Icons.calendar_month_outlined),
-selectedIcon: Icon(Icons.calendar_month),
-label: "Calendar",
-),
-NavigationDestination(
-icon: Icon(Icons.person_outline),
-selectedIcon: Icon(Icons.person),
-label: "Profile",
-),
-],
-),
 
 body: SafeArea(
 child: StreamBuilder<QuerySnapshot>(

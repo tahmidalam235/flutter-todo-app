@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../services/firestore_service.dart';
+import '../widgets/task_card.dart';
+import 'add_task_screen.dart';
 
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
   final String title;
   final bool? completed;
 
@@ -15,121 +17,200 @@ class TaskListScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+  State<TaskListScreen> createState() => _TaskListScreenState();
+}
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        title: Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.black,
-          ),
-        ),
-      ),
+class _TaskListScreenState extends State<TaskListScreen> {
+int selectedFilter = 0;
 
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirestoreService().getTasks(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
+Widget _filterChip({
+required String text,
+required int index,
+}) {
+final selected = selectedFilter == index;
 
-          List tasks = snapshot.data!.docs;
+return GestureDetector(
+onTap: () {
+setState(() {
+selectedFilter = index;
+});
+},
+child: AnimatedContainer(
+duration: const Duration(milliseconds: 220),
+margin: const EdgeInsets.only(right: 10),
+padding: const EdgeInsets.symmetric(
+horizontal: 18,
+vertical: 10,
+),
+decoration: BoxDecoration(
+color: selected
+? const Color(0xff2E8B72)
+: Colors.white,
+borderRadius: BorderRadius.circular(30),
+border: Border.all(
+color: selected
+? const Color(0xff2E8B72)
+: Colors.grey.shade300,
+),
+),
+child: Text(
+text,
+style: GoogleFonts.inter(
+fontWeight: FontWeight.w600,
+color: selected
+? Colors.white
+: Colors.black87,
+),
+),
+),
+);
+}
 
-          if (completed != null) {
-            tasks = tasks.where((task) {
-              return task["completed"] == completed;
-            }).toList();
-          }
+@override
+Widget build(BuildContext context) {
+return Scaffold(
+backgroundColor: const Color(0xffF6F7FB),
+body: SafeArea(
+child: StreamBuilder<QuerySnapshot>(
+stream: FirestoreService().getTasks(),
+builder: (context, snapshot) {
 
-          if (tasks.isEmpty) {
-            return Center(
-              child: Text(
-                "No Tasks Found",
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            );
-          }
+if (!snapshot.hasData) {
+return const Center(
+child: CircularProgressIndicator(),
+);
+}
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(18),
-            itemCount: tasks.length,
-            itemBuilder: (context, index) {
-              final task = tasks[index];
+List tasks = snapshot.data!.docs;
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 15),
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: ListTile(
-                  leading: Icon(
-                    task["completed"]
-                        ? Icons.check_circle
-                        : Icons.radio_button_unchecked,
-                    color: task["completed"]
-                        ? Colors.green
-                        : Colors.orange,
-                  ),
+if (selectedFilter == 1) {
+tasks = tasks
+.where((e) => e["completed"] == true)
+.toList();
+}
 
-                  title: Text(
-                    task["title"],
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
-                      decoration: task["completed"]
-                          ? TextDecoration.lineThrough
-                          : null,
-                    ),
-                  ),
+if (selectedFilter == 2) {
+tasks = tasks
+.where((e) => e["completed"] == false)
+.toList();
+}
 
-                  subtitle: Text(
-                    task["category"],
-                    style: GoogleFonts.inter(),
-                  ),
+return Column(
+crossAxisAlignment:
+CrossAxisAlignment.start,
+children: [
 
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: task["completed"]
-                          ? Colors.green.shade100
-                          : Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      task["completed"]
-                          ? "Completed"
-                          : "Pending",
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: task["completed"]
-                            ? Colors.green
-                            : Colors.orange,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
+const SizedBox(height: 22),
+
+Padding(
+padding: const EdgeInsets.symmetric(
+horizontal: 20,
+),
+child: Text(
+"My Tasks",
+style: GoogleFonts.inter(
+fontSize: 34,
+fontWeight: FontWeight.w800,
+),
+),
+),
+
+const SizedBox(height: 18),
+
+Padding(
+padding: const EdgeInsets.symmetric(
+horizontal: 20,
+),
+child: Row(
+children: [
+
+_filterChip(
+text: "All",
+index: 0,
+),
+
+_filterChip(
+text: "Completed",
+index: 1,
+),
+
+_filterChip(
+text: "Pending",
+index: 2,
+),
+
+],
+),
+),
+
+const SizedBox(height: 22),
+
+Expanded(
+child: tasks.isEmpty
+? Center(
+child: Text(
+"No Tasks Found",
+style: GoogleFonts.inter(
+fontSize: 18,
+fontWeight:
+FontWeight.w600,
+),
+),
+)
+: ListView.builder(
+padding:
+const EdgeInsets.fromLTRB(
+20,
+0,
+20,
+20),
+itemCount: tasks.length,
+itemBuilder:
+(context, index) {
+
+final task = tasks[index];
+return TaskCard(
+  task: task,
+
+  onTap: () async {
+    await FirestoreService()
+        .updateTask(
+      task.id,
+      !(task["completed"] ?? false),
     );
-  }
+  },
+
+  onEdit: () {
+    Future.delayed(
+      Duration.zero,
+          () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                AddTaskScreen(
+                  task: task,
+                ),
+          ),
+        );
+      },
+    );
+  },
+
+  onDelete: () async {
+    await FirestoreService()
+        .deleteTask(task.id);
+  },
+);
+},
+),
+),
+
+],
+);
+},
+),
+),
+);
+}
 }
