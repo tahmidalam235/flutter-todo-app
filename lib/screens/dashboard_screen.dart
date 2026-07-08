@@ -1,12 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../services/firestore_service.dart';
 import 'add_task_screen.dart';
-import 'task_detail_screen.dart';
 import 'home_screen.dart';
 import 'calendar_screen.dart';
 import 'profile_screen.dart';
+import 'dart:async';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'search_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,24 +19,39 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-
 String search = "";
 String selectedCategory = "All";
-
-final List<String> categories = [
-"All",
-"Work",
-"Personal",
-"Study",
-"Shopping",
-"Fitness",
-];
+DateTime _currentTime = DateTime.now();
+Timer? _timer;
 
 @override
+void initState() {
+  super.initState();
+
+  _timer = Timer.periodic(
+    const Duration(seconds: 1),
+        (_) {
+      if (mounted) {
+        setState(() {
+          _currentTime = DateTime.now();
+        });
+      }
+    },
+  );
+}
+@override
+void dispose() {
+  _timer?.cancel();
+  super.dispose();
+}
+String get currentDate =>
+    DateFormat('EEEE, dd MMMM yyyy').format(_currentTime);
+
+String get currentTime =>
+    DateFormat('hh:mm a').format(_currentTime);
+@override
 Widget build(BuildContext context) {
-
 return Scaffold(
-
 backgroundColor: const Color(0xffF6F7FB),
 
 floatingActionButton: FloatingActionButton.extended(
@@ -50,128 +68,293 @@ builder: (_) => const AddTaskScreen(),
 },
 ),
 
+bottomNavigationBar: NavigationBar(
+selectedIndex: 0,
+onDestinationSelected: (index) {
+switch (index) {
+case 0:
+break;
+
+case 1:
+Navigator.push(
+context,
+MaterialPageRoute(
+builder: (_) => const HomeScreen(),
+),
+);
+break;
+
+case 2:
+Navigator.push(
+context,
+MaterialPageRoute(
+builder: (_) => const CalendarScreen(),
+),
+);
+break;
+
+case 3:
+Navigator.push(
+context,
+MaterialPageRoute(
+builder: (_) => const ProfileScreen(),
+),
+);
+break;
+}
+},
+destinations: const [
+NavigationDestination(
+icon: Icon(Icons.home_outlined),
+selectedIcon: Icon(Icons.home),
+label: "Home",
+),
+NavigationDestination(
+icon: Icon(Icons.task_outlined),
+selectedIcon: Icon(Icons.task),
+label: "Tasks",
+),
+NavigationDestination(
+icon: Icon(Icons.calendar_month_outlined),
+selectedIcon: Icon(Icons.calendar_month),
+label: "Calendar",
+),
+NavigationDestination(
+icon: Icon(Icons.person_outline),
+selectedIcon: Icon(Icons.person),
+label: "Profile",
+),
+],
+),
+
 body: SafeArea(
-
 child: StreamBuilder<QuerySnapshot>(
-
 stream: FirestoreService().getTasks(),
-
 builder: (context, snapshot) {
-
 if (!snapshot.hasData) {
 return const Center(
 child: CircularProgressIndicator(),
 );
 }
 
-final allTasks = snapshot.data!.docs;
+final tasks = snapshot.data!.docs;
 
-final tasks = allTasks.where((task) {
+final totalTasks = tasks.length;
 
-final title =
-task['title'].toString().toLowerCase();
+final completedTasks = tasks.where((task) {
+return task["completed"] == true;
+}).length;
 
-final category =
-task['category'].toString();
+final pendingTasks = totalTasks - completedTasks;
+final filteredTasks = tasks.where((task) {
 
-final searchMatch =
-title.contains(search);
+  final title = task["title"].toString().toLowerCase();
+  final category = task["category"].toString().toLowerCase();
 
-final categoryMatch =
-selectedCategory == "All"
-? true
-: category == selectedCategory;
+  final matchesSearch =
+      title.contains(search) ||
+      category.contains(search);
 
-return searchMatch && categoryMatch;
+  final matchesCategory =
+      selectedCategory == "All" ||
+      category == selectedCategory.toLowerCase();
+
+  return matchesSearch && matchesCategory;
 
 }).toList();
 
-final completed =
-allTasks.where((e) => e['completed']).length;
-
-final pending =
-allTasks.length - completed;
-
 return ListView(
-padding: const EdgeInsets.all(20),
+padding: const EdgeInsets.all(18),
 children: [
 
-const Text(
-"Good Morning 👋",
-style: TextStyle(
-color: Colors.grey,
-),
-),
+  Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
 
-const SizedBox(height: 5),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
-const Text(
-"Tahmid",
-style: TextStyle(
-fontSize: 30,
-fontWeight: FontWeight.bold,
-),
-),
+            Text(
+              "Good Morning 👋",
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade600,
+                letterSpacing: .3,
+              ),
+            ),
 
-const SizedBox(height: 20),
+            const SizedBox(height: 6),
 
-TextField(
+            Text(
+              "Tahmid",
+              style: GoogleFonts.inter(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xff1B1B1B),
+                height: 1.1,
+              ),
+            ),
 
-decoration: InputDecoration(
+            const SizedBox(height: 10),
 
-hintText: "Search Tasks",
+            Row(
+              children: [
 
-prefixIcon:
-const Icon(Icons.search),
+                Icon(
+                  Icons.calendar_today_rounded,
+                  size: 16,
+                  color: Colors.grey.shade600,
+                ),
 
-filled: true,
+                const SizedBox(width: 6),
 
-fillColor: Colors.white,
+                Text(
+                  currentDate,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
 
-border: OutlineInputBorder(
-borderRadius:
-BorderRadius.circular(18),
-borderSide: BorderSide.none,
-),
-),
+              ],
+            ),
 
-onChanged: (value) {
+            const SizedBox(height: 5),
 
-setState(() {
-search =
-value.toLowerCase();
-});
+            Row(
+              children: [
 
-},
-),
+                const Icon(
+                  Icons.access_time_filled_rounded,
+                  size: 17,
+                  color: Color(0xff2E8B72),
+                ),
 
-const SizedBox(height: 20),
+                const SizedBox(width: 6),
+
+                Text(
+                  currentTime,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: const Color(0xff2E8B72),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+              ],
+            ),
+
+          ],
+        ),
+      ),
+
+      InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const ProfileScreen(),
+            ),
+          );
+        },
+        child: Container(
+          width: 58,
+          height: 58,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xff36C2A6),
+                Color(0xff2E8B72),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.teal.withOpacity(.25),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Text(
+              "T",
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+      )
+
+    ],
+  ),
+
+const SizedBox(height: 25),
+
+  InkWell(
+    borderRadius: BorderRadius.circular(18),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const SearchScreen(),
+        ),
+      );
+    },
+    child: IgnorePointer(
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: "Search Tasks",
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    ),
+  ),
+
+const SizedBox(height: 25),
+
 Row(
 children: [
 
 Expanded(
 child: statCard(
-allTasks.length.toString(),
+totalTasks.toString(),
 "Total",
 Colors.teal,
 ),
 ),
 
-const SizedBox(width: 12),
+const SizedBox(width: 15),
 
 Expanded(
 child: statCard(
-completed.toString(),
+completedTasks.toString(),
 "Completed",
 Colors.green,
 ),
 ),
 
-const SizedBox(width: 12),
+const SizedBox(width: 15),
 
 Expanded(
 child: statCard(
-pending.toString(),
+pendingTasks.toString(),
 "Pending",
 Colors.orange,
 ),
@@ -181,214 +364,312 @@ Colors.orange,
 ),
 
 const SizedBox(height: 25),
-
-const Text(
-"Categories",
-style: TextStyle(
-fontSize: 23,
-fontWeight: FontWeight.bold,
-),
-),
-
-const SizedBox(height: 15),
-
-SizedBox(
-height: 45,
-child: ListView.builder(
-scrollDirection: Axis.horizontal,
-itemCount: categories.length,
-itemBuilder: (_, index) {
-
-final category = categories[index];
-
-return Padding(
-padding: const EdgeInsets.only(right: 8),
-child: ChoiceChip(
-
-label: Text(category),
-
-selected:
-selectedCategory == category,
-
-onSelected: (_) {
-
-setState(() {
-selectedCategory =
-category;
-});
-
-},
-
-),
-);
-
-},
-),
-),
-
-const SizedBox(height: 25),
-
-const Text(
-"Recent Tasks",
-style: TextStyle(
-fontSize: 23,
-fontWeight: FontWeight.bold,
-),
-),
-
-const SizedBox(height: 15),
-
-ListView.builder(
-
-shrinkWrap: true,
-
-physics:
-const NeverScrollableScrollPhysics(),
-
-itemCount: tasks.length,
-
-itemBuilder: (context, index) {
-
-final task = tasks[index];
-
-return taskCard(task);
-
-},
-
-),
-
-],
-);
-
-},
-
-),
-
-),
-  bottomNavigationBar: NavigationBar(
-    selectedIndex: 0,
-    onDestinationSelected: (index) {
-      switch (index) {
-        case 0:
-          break;
-
-        case 1:
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const HomeScreen(),
-            ),
-          );
-          break;
-
-        case 2:
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CalendarScreen(),
-            ),
-          );
-          break;
-
-        case 3:
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProfileScreen(),
-            ),
-          );
-          break;
-      }
-    },
-    destinations: const [
-      NavigationDestination(
-        icon: Icon(Icons.home_outlined),
-        selectedIcon: Icon(Icons.home),
-        label: "Home",
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.task_outlined),
-        selectedIcon: Icon(Icons.task),
-        label: "Tasks",
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.calendar_month_outlined),
-        selectedIcon: Icon(Icons.calendar_month),
-        label: "Calendar",
-      ),
-      NavigationDestination(
-        icon: Icon(Icons.person_outline),
-        selectedIcon: Icon(Icons.person),
-        label: "Profile",
-      ),
-    ],
+  const Text(
+    "Categories",
+    style: TextStyle(
+      fontSize: 23,
+      fontWeight: FontWeight.bold,
+    ),
   ),
 
-);
+  const SizedBox(height: 15),
 
-}
-Widget statCard(String number, String title, Color color) {
-return Card(
-child: Padding(
-padding: const EdgeInsets.all(18),
-child: Column(
-crossAxisAlignment: CrossAxisAlignment.start,
-children: [
+  SizedBox(
+    height: 45,
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      children: [
 
-Text(
-number,
-style: TextStyle(
-fontSize: 28,
-fontWeight: FontWeight.bold,
-color: color,
-),
-),
+        chip("All"),
+        chip("Work"),
+        chip("Personal"),
+        chip("Study"),
+        chip("Shopping"),
+        chip("Fitness"),
 
-const SizedBox(height: 6),
+      ],
+    ),
+  ),
 
-Text(title),
+  const SizedBox(height: 30),
 
-],
-),
-),
-);
-}
-Widget taskCard(dynamic task) {
-  return InkWell(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => TaskDetailScreen(task: task),
-        ),
+  const Text(
+    "Recent Tasks",
+    style: TextStyle(
+      fontSize: 23,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+
+  const SizedBox(height: 15),
+
+  filteredTasks.isEmpty
+      ? Padding(
+    padding: const EdgeInsets.symmetric(vertical: 40),
+    child: Center(
+      child: Column(
+        children: [
+
+          Icon(
+            Icons.search_off_rounded,
+            size: 70,
+            color: Colors.grey.shade400,
+          ),
+
+          const SizedBox(height: 15),
+
+          Text(
+            "No matching tasks found",
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            "Try another keyword",
+            style: GoogleFonts.inter(
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ],
+      ),
+    ),
+  )
+      : ListView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: filteredTasks.length,
+    itemBuilder: (context, index) {
+
+      final task = filteredTasks[index];
+
+      return taskTile(
+        task.id,
+        task["title"],
+        task["category"],
+        task["completed"] ?? false,
       );
     },
-    child: Card(
-      margin: const EdgeInsets.only(bottom: 15),
-      child: ListTile(
-        leading: Icon(
-          task["completed"]
-              ? Icons.check_circle
-              : Icons.radio_button_unchecked,
-          color: task["completed"] ? Colors.green : Colors.teal,
+  ),
+
+],
+);
+},
+),
+),
+);
+}
+
+Widget statCard(String number, String title, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.05),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: color.withOpacity(.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            Icons.analytics_rounded,
+            color: color,
+            size: 22,
+          ),
         ),
 
-        title: Text(task["title"]),
+        const SizedBox(height: 18),
 
-        subtitle: Text(task["category"]),
+        Text(
+          number,
+          style: GoogleFonts.inter(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: const Color(0xff1B1B1B),
+          ),
+        ),
 
-        trailing: PopupMenuButton(
-          itemBuilder: (_) => const [
-            PopupMenuItem(
-              value: "delete",
-              child: Text("Delete"),
+        const SizedBox(height: 4),
+
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget chip(String text) {
+  final selected = selectedCategory == text;
+
+  return Padding(
+    padding: const EdgeInsets.only(right: 10),
+    child: ChoiceChip(
+      label: Text(
+        text,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: selected
+              ? Colors.white
+              : const Color(0xff4A4A4A),
+        ),
+      ),
+
+      selected: selected,
+
+      selectedColor: const Color(0xff2E8B72),
+
+      backgroundColor: Colors.white,
+
+      side: BorderSide.none,
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+
+      onSelected: (_) {
+        setState(() {
+          selectedCategory = text;
+        });
+      },
+    ),
+  );
+}
+
+Widget taskTile(
+    String id,
+    String title,
+    String subtitle,
+    bool completed,
+    ) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(.05),
+          blurRadius: 18,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 10,
+      ),
+
+      leading: Transform.scale(
+        scale: 1.15,
+        child: Checkbox(
+          value: completed,
+          shape: const CircleBorder(),
+          activeColor: const Color(0xff2E8B72),
+          side: BorderSide(
+            color: Colors.grey.shade400,
+            width: 1.5,
+          ),
+          onChanged: (value) async {
+            await FirebaseFirestore.instance
+                .collection("tasks")
+                .doc(id)
+                .update({
+              "completed": value,
+            });
+
+            setState(() {});
+          },
+        ),
+      ),
+
+      title: Text(
+        title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.inter(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xff1B1B1B),
+          decoration:
+          completed ? TextDecoration.lineThrough : null,
+        ),
+      ),
+
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Text(
+          subtitle,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+
+      trailing: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: completed
+              ? const Color(0xffE8F8F2)
+              : const Color(0xffFFF3E0),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            Icon(
+              completed
+                  ? Icons.check_circle_rounded
+                  : Icons.schedule_rounded,
+              size: 16,
+              color: completed
+                  ? const Color(0xff2E8B72)
+                  : Colors.orange,
+            ),
+
+            const SizedBox(width: 6),
+
+            Text(
+              completed ? "Completed" : "Pending",
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: completed
+                    ? const Color(0xff2E8B72)
+                    : Colors.orange,
+              ),
             ),
           ],
-          onSelected: (value) async {
-            if (value == "delete") {
-              await FirestoreService().deleteTask(task.id);
-            }
-          },
         ),
       ),
     ),
