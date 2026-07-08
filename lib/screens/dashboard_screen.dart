@@ -10,6 +10,7 @@ import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'search_screen.dart';
+import 'task_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -334,9 +335,10 @@ children: [
 
 Expanded(
 child: statCard(
-totalTasks.toString(),
-"Total",
-Colors.teal,
+  totalTasks.toString(),
+  "Total",
+  Colors.teal,
+  null,
 ),
 ),
 
@@ -344,9 +346,10 @@ const SizedBox(width: 15),
 
 Expanded(
 child: statCard(
-completedTasks.toString(),
-"Completed",
-Colors.green,
+  completedTasks.toString(),
+  "Completed",
+  Colors.green,
+  true,
 ),
 ),
 
@@ -354,9 +357,10 @@ const SizedBox(width: 15),
 
 Expanded(
 child: statCard(
-pendingTasks.toString(),
-"Pending",
-Colors.orange,
+  pendingTasks.toString(),
+  "Pending",
+  Colors.orange,
+  false,
 ),
 ),
 
@@ -463,8 +467,26 @@ const SizedBox(height: 25),
 );
 }
 
-Widget statCard(String number, String title, Color color) {
-  return Container(
+Widget statCard(
+    String number,
+    String title,
+    Color color,
+    bool? completed,
+    ) {
+  return InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => TaskListScreen(
+              title: "$title Tasks",
+              completed: completed,
+            ),
+          ),
+        );
+      },
+      child: Container(
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -518,6 +540,7 @@ Widget statCard(String number, String title, Color color) {
         ),
       ],
     ),
+      )
   );
 }
 
