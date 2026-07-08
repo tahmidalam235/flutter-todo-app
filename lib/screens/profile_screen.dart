@@ -1,5 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import '../services/auth_service.dart';
+import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -46,12 +50,14 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 55,
-                  backgroundColor: Color(0xff2E8B72),
+                  backgroundColor: const Color(0xff2E8B72),
                   child: Text(
-                    "T",
-                    style: TextStyle(
+                    (FirebaseAuth.instance.currentUser?.displayName ?? "U")
+                        .substring(0, 1)
+                        .toUpperCase(),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 40,
                       fontWeight: FontWeight.bold,
@@ -61,10 +67,10 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 15),
 
-                const Center(
+                Center(
                   child: Text(
-                    "Tahmid Alam",
-                    style: TextStyle(
+                    FirebaseAuth.instance.currentUser?.displayName ?? "Unknown User",
+                    style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
@@ -73,10 +79,10 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 5),
 
-                const Center(
+                Center(
                   child: Text(
-                    "tahmid@example.com",
-                    style: TextStyle(
+                    FirebaseAuth.instance.currentUser?.email ?? "No Email",
+                    style: const TextStyle(
                       color: Colors.grey,
                     ),
                   ),
@@ -157,10 +163,22 @@ class ProfileScreen extends StatelessWidget {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                      Colors.red.withOpacity(.12),
+                      Colors.red.withValues(alpha: .12),
                       elevation: 0,
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      await AuthService().signOut();
+
+                      if (!context.mounted) return;
+
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LoginScreen(),
+                        ),
+                            (route) => false,
+                      );
+                    },
 
                     child: const Text(
                       "Log Out",
