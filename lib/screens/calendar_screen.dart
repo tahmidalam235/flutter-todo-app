@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -62,6 +63,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection("tasks")
+                    .where(
+                  "uid",
+                  isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+                )
                     .snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../services/auth_service.dart';
 import 'login_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,6 +18,10 @@ class ProfileScreen extends StatelessWidget {
         child: StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection("tasks")
+              .where(
+            "uid",
+            isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+          )
               .snapshots(),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
@@ -79,12 +84,33 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 5),
 
-                Center(
-                  child: Text(
-                    FirebaseAuth.instance.currentUser?.email ?? "No Email",
-                    style: const TextStyle(
-                      color: Colors.grey,
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: 170,
+                  height: 45,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.edit_outlined),
+                    label: const Text("Edit Profile"),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.teal,
+                      side: const BorderSide(color: Colors.teal),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EditProfileScreen(),
+                        ),
+                      );
+
+                      if (context.mounted) {
+                        (context as Element).markNeedsBuild();
+                      }
+                    },
                   ),
                 ),
 

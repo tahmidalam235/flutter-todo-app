@@ -11,6 +11,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'search_screen.dart';
 import 'task_list_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -54,6 +56,15 @@ String get currentTime =>
 
 @override
 Widget build(BuildContext context) {
+  final user = FirebaseAuth.instance.currentUser;
+
+  final displayName = (() {
+    final name = user?.displayName?.trim() ?? "";
+
+    if (name.isEmpty) return "User";
+
+    return name[0].toUpperCase() + name.substring(1);
+  })();
 return Scaffold(
 backgroundColor: const Color(0xffF6F7FB),
 
@@ -84,6 +95,11 @@ child: CircularProgressIndicator(),
 }
 
 final tasks = snapshot.data!.docs;
+print("Current User: ${FirebaseAuth.instance.currentUser!.uid}");
+
+for (var task in tasks) {
+  print(task.data());
+}
 
 final totalTasks = tasks.length;
 
@@ -123,7 +139,7 @@ children: [
           children: [
 
             Text(
-              "Good Morning 👋",
+              "Welcome Back 👋",
               style: GoogleFonts.inter(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -135,7 +151,7 @@ children: [
             const SizedBox(height: 6),
 
             Text(
-              "Tahmid",
+              displayName,
               style: GoogleFonts.inter(
                 fontSize: 32,
                 fontWeight: FontWeight.w800,
@@ -143,7 +159,6 @@ children: [
                 height: 1.1,
               ),
             ),
-
             const SizedBox(height: 10),
 
             Row(
@@ -231,7 +246,7 @@ children: [
           ),
           child: Center(
             child: Text(
-              "T",
+            displayName[0],
               style: GoogleFonts.inter(
                 color: Colors.white,
                 fontSize: 24,

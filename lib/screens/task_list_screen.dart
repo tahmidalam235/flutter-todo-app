@@ -68,9 +68,34 @@ color: selected
 
 @override
 Widget build(BuildContext context) {
-return Scaffold(
-backgroundColor: const Color(0xffF6F7FB),
-body: SafeArea(
+  return Scaffold(
+    backgroundColor: const Color(0xffF6F7FB),
+
+    appBar: AppBar(
+      backgroundColor: const Color(0xffF6F7FB),
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Colors.black,
+        ),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+      title: Text(
+        "My Tasks",
+        style: GoogleFonts.inter(
+          fontSize: 30,
+          fontWeight: FontWeight.w800,
+          color: Colors.black,
+        ),
+      ),
+      centerTitle: false,
+    ),
+
+    body: SafeArea(
 child: StreamBuilder<QuerySnapshot>(
 stream: FirestoreService().getTasks(),
 builder: (context, snapshot) {
@@ -99,24 +124,6 @@ return Column(
 crossAxisAlignment:
 CrossAxisAlignment.start,
 children: [
-
-const SizedBox(height: 22),
-
-Padding(
-padding: const EdgeInsets.symmetric(
-horizontal: 20,
-),
-child: Text(
-"My Tasks",
-style: GoogleFonts.inter(
-fontSize: 34,
-fontWeight: FontWeight.w800,
-),
-),
-),
-
-const SizedBox(height: 18),
-
 Padding(
 padding: const EdgeInsets.symmetric(
 horizontal: 20,
