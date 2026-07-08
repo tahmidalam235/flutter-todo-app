@@ -16,6 +16,7 @@ class FirestoreService {
     required String category,
     required String priority,
     required String time,
+    required String date,
   }) async {
     await _firestore.collection("tasks").add({
       "title": title,
@@ -23,6 +24,7 @@ class FirestoreService {
       "category": category,
       "priority": priority,
       "time": time,
+      "date": date,
       "completed": false,
       "createdAt": FieldValue.serverTimestamp(),
     });
@@ -31,6 +33,25 @@ class FirestoreService {
   Future<void> updateTask(String id, bool completed) async {
     await _firestore.collection("tasks").doc(id).update({
       "completed": completed,
+    });
+  }
+
+  Future<void> updateTaskData({
+    required String id,
+    required String title,
+    required String description,
+    required String category,
+    required String priority,
+    required String time,
+    required String date,
+  }) async {
+    await _firestore.collection("tasks").doc(id).update({
+      "title": title,
+      "description": description,
+      "category": category,
+      "priority": priority,
+      "time": time,
+      "date": date,
     });
   }
 

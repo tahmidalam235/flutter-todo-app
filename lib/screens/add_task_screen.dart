@@ -24,6 +24,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String priority = "Medium";
 
   TimeOfDay? selectedTime;
+  DateTime selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -45,6 +46,20 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     if (picked != null) {
       setState(() {
         selectedTime = picked;
+      });
+    }
+  }
+  Future<void> pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2025),
+      lastDate: DateTime(2035),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
       });
     }
   }
@@ -163,6 +178,18 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 onPressed: pickTime,
               ),
             ),
+            const SizedBox(height: 15),
+
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.calendar_today),
+                label: Text(
+                  "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
+                ),
+                onPressed: pickDate,
+              ),
+            ),
 
             const SizedBox(height: 35),
 
@@ -182,6 +209,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       time: selectedTime == null
                           ? "No Time"
                           : selectedTime!.format(context),
+                      date:
+                      "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}",
                     );
 
                   } else {
