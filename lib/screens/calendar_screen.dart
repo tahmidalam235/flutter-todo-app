@@ -11,17 +11,27 @@ class CalendarScreen extends StatefulWidget {
 
 class _CalendarScreenState extends State<CalendarScreen> {
   late DateTime selectedDate;
-  late List<DateTime> weekDays;
+  final ScrollController _scrollController = ScrollController();
+
+  static const double _itemWidth = 78;
+
+  static const int _centerIndex = 5000;
 
   @override
   void initState() {
     super.initState();
+
     final now = DateTime.now();
-    selectedDate = DateTime(now.year, now.month, now.day);
-    weekDays = List.generate(
-      7,
-          (i) => DateTime(now.year, now.month, now.day + i),
+
+    selectedDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.jumpTo(15 * _itemWidth);
+    });
   }
 
   String get firestoreDate =>
@@ -48,9 +58,32 @@ class _CalendarScreenState extends State<CalendarScreen> {
               style: const TextStyle(color: Colors.grey, fontSize: 17),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: weekDays.map((d) => _dayWidget(d)).toList(),
+            SizedBox(
+              height: 105,
+              child: ListView.builder(
+                controller: _scrollController,
+                scrollDirection: Axis.horizontal,
+                itemCount: 31,
+                itemBuilder: (context, index) {
+                  final date = DateTime(
+                    selectedDate.year,
+                    selectedDate.month,
+                    selectedDate.day + (index - 15),
+                  );
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedDate = date;
+                        });
+                      },
+                      child: _dayWidget(date),
+                    ),
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 30),
             Text(
@@ -144,46 +177,51 @@ class _CalendarScreenState extends State<CalendarScreen> {
             date.month == selectedDate.month &&
             date.day == selectedDate.day;
 
-    return GestureDetector(
-      onTap: () => setState(() => selectedDate = date),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xff2E8B72)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          children: [
-            Text(
-              _weekday(date.weekday),
-              style: TextStyle(
-                  color: selected
-                      ? Colors.white
-                      : Colors.grey),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              "${date.day}",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+    return Container(
+      width: 68,
+      padding: const EdgeInsets.symmetric(
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: selected
+            ? const Color(0xff2E8B72)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Text(
+            _weekday(date.weekday),
+            style: TextStyle(
                 color: selected
                     ? Colors.white
-                    : Colors.black,
-              ),
+                    : Colors.grey),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            "${date.day}",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: selected
+                  ? Colors.white
+                  : Colors.black,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+
   }
 
   String _weekday(int w) =>
       ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][w - 1];
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
   String _month(int m) => [
     "January",
     "February",

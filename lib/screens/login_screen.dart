@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -85,7 +86,83 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 20),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () async {
+                          final emailController =
+                          TextEditingController();
+
+                          final email = await showDialog<String>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text("Forgot Password"),
+                                content: TextField(
+                                  controller: emailController,
+                                  keyboardType:
+                                  TextInputType.emailAddress,
+                                  decoration: const InputDecoration(
+                                    hintText: "Enter your email",
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(
+                                        context,
+                                        emailController.text.trim(),
+                                      );
+                                    },
+                                    child: const Text("Send"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+
+                          if (email == null || email.isEmpty) return;
+
+                          try {
+                            await AuthService().resetPassword(
+                              email: email,
+                            );
+
+                            if (!context.mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Password reset link has been sent to your email.",
+                                ),
+                              ),
+                            );
+                          } on FirebaseAuthException catch (e) {
+                            if (!context.mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.message ?? "Failed to send reset email.",
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          "Forgot Password?",
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
 
                     SizedBox(
                       width: double.infinity,
@@ -104,8 +181,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             setState(() => loading = false);
 
-                            // Login successful.
-                            // authStateChanges() automatically MainNavigationScreen দেখাবে.
+                            if (!context.mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Login successful."),
+                                duration: Duration(milliseconds: 400),
+                              ),
+                            );
+
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const MainNavigationScreen(),
+                              ),
+                            );
 
                           } on FirebaseAuthException catch (e) {
                             setState(() => loading = false);

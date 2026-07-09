@@ -148,32 +148,15 @@ class TaskCard extends StatelessWidget {
 
                     const SizedBox(width: 10),
 
-                    Text(
-                      task["time"] ?? "",
-                      style: GoogleFonts.inter(
-                        color: Colors.grey.shade600,
-                        fontSize: 13,
-                      ),
-                    ),
-
-                    const SizedBox(width: 6),
-
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-
-                    const SizedBox(width: 6),
-
-                    Text(
-                      category,
-                      style: GoogleFonts.inter(
-                        color: Colors.grey.shade600,
-                        fontSize: 13,
+                    Expanded(
+                      child: Text(
+                        "${task["time"] ?? ""} • $category",
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: Colors.grey.shade600,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],

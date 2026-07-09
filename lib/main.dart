@@ -38,14 +38,10 @@ class MyApp extends StatelessWidget {
         colorSchemeSeed: Colors.teal,
       ),
       home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.userChanges(),
+        stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
+            return const SizedBox.shrink();
           }
 
           if (snapshot.hasData) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'main_navigation_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -136,7 +137,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           }
 
                           setState(() => loading = true);
-                          setState(() => loading = true);
 
                           try {
                             await AuthService().signUp(
@@ -144,7 +144,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               email: email,
                               password: password,
                             );
-
                             setState(() => loading = false);
 
                             if (!context.mounted) return;
@@ -152,10 +151,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text("Account created successfully."),
+                                duration: Duration(milliseconds: 400),
                               ),
                             );
 
-                            // authStateChanges automatically MainNavigationScreen এ নিয়ে যাবে
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (_) => const MainNavigationScreen(),
+                              ),
+                            );
+
+
+
 
                           } on FirebaseAuthException catch (e) {
                             setState(() => loading = false);
