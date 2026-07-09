@@ -66,7 +66,7 @@ Widget build(BuildContext context) {
     return name[0].toUpperCase() + name.substring(1);
   })();
 return Scaffold(
-backgroundColor: const Color(0xffF6F7FB),
+  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
 floatingActionButton: FloatingActionButton.extended(
 backgroundColor: const Color(0xff2E8B72),
@@ -155,7 +155,7 @@ children: [
               style: GoogleFonts.inter(
                 fontSize: 32,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xff1B1B1B),
+                color: Theme.of(context).colorScheme.onSurface,
                 height: 1.1,
               ),
             ),
@@ -278,7 +278,7 @@ const SizedBox(height: 25),
           hintText: "Search Tasks",
           prefixIcon: const Icon(Icons.search),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: Theme.of(context).cardColor,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
             borderSide: BorderSide.none,
@@ -328,11 +328,12 @@ child: statCard(
 ),
 
 const SizedBox(height: 25),
-  const Text(
+  Text(
     "Categories",
     style: TextStyle(
       fontSize: 23,
       fontWeight: FontWeight.bold,
+      color: Theme.of(context).colorScheme.onSurface,
     ),
   ),
 
@@ -357,11 +358,12 @@ const SizedBox(height: 25),
 
   const SizedBox(height: 30),
 
-  const Text(
+  Text(
     "Recent Tasks",
     style: TextStyle(
       fontSize: 23,
       fontWeight: FontWeight.bold,
+      color: Theme.of(context).colorScheme.onSurface,
     ),
   ),
 
@@ -449,7 +451,7 @@ Widget statCard(
       child: Container(
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(22),
       boxShadow: [
         BoxShadow(
@@ -484,7 +486,7 @@ Widget statCard(
           style: GoogleFonts.inter(
             fontSize: 28,
             fontWeight: FontWeight.w800,
-            color: const Color(0xff1B1B1B),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
 
@@ -517,7 +519,7 @@ Widget chip(String text) {
           fontWeight: FontWeight.w600,
           color: selected
               ? Colors.white
-              : const Color(0xff4A4A4A),
+              : Theme.of(context).colorScheme.onSurface,
         ),
       ),
 
@@ -525,7 +527,7 @@ Widget chip(String text) {
 
       selectedColor: const Color(0xff2E8B72),
 
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
 
       side: BorderSide.none,
 
@@ -551,7 +553,7 @@ Widget taskTile(
   return Container(
     margin: const EdgeInsets.only(bottom: 16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(22),
       boxShadow: [
         BoxShadow(
@@ -597,7 +599,7 @@ Widget taskTile(
         style: GoogleFonts.inter(
           fontSize: 17,
           fontWeight: FontWeight.w700,
-          color: const Color(0xff1B1B1B),
+          color: Theme.of(context).colorScheme.onSurface,
           decoration:
           completed ? TextDecoration.lineThrough : null,
         ),

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'screens/splash_screen.dart';
+import 'theme/app_theme.dart';
 
 import 'firebase_options.dart';
 import 'services/notification_service.dart';
-import 'screens/login_screen.dart';
-import 'screens/main_navigation_screen.dart';
+import 'package:provider/provider.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +23,12 @@ void main() async {
     await NotificationService.initialize();
   }
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,27 +36,40 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Todo App',
+      themeMode: themeProvider.themeMode,
+
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.teal,
+        brightness: Brightness.light,
       ),
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SizedBox.shrink();
-          }
 
-          if (snapshot.hasData) {
-            return const MainNavigationScreen();
-          }
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
 
-          return const LoginScreen();
-        },
+        scaffoldBackgroundColor: const Color(0xFF121212),
+
+        cardColor: const Color(0xFF1E1E1E),
+
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xff2E8B72),
+          secondary: Color(0xff2E8B72),
+          surface: Color(0xFF1E1E1E),
+          onSurface: Colors.white,
+        ),
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF121212),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
       ),
+      home: const SplashScreen(),
     );
   }
 }

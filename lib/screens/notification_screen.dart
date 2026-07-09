@@ -7,21 +7,34 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:
+      isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor:
+        isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
+
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : Colors.black,
+        ),
+
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: isDark ? Colors.white : Colors.black,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+
+        title: Text(
           "Notifications",
           style: TextStyle(
-            color: Colors.black,
+            color: isDark ? Colors.white : Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -44,10 +57,14 @@ class NotificationScreen extends StatelessWidget {
                 child: Text(
                   snapshot.error.toString(),
                   textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
                 ),
               ),
             );
           }
+
           if (!snapshot.hasData) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -57,12 +74,13 @@ class NotificationScreen extends StatelessWidget {
           final notifications = snapshot.data!.docs;
 
           if (notifications.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No Notifications",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
             );
@@ -98,29 +116,51 @@ class NotificationScreen extends StatelessWidget {
                       .doc(item.id)
                       .delete();
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Notification deleted"),
-                    ),
-                  );
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Notification deleted"),
+                      ),
+                    );
+                  }
                 },
 
                 child: Card(
+                  color: isDark
+                      ? const Color(0xff1F1F1F)
+                      : Colors.white,
                   elevation: 0,
                   margin: const EdgeInsets.only(bottom: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: ListTile(
-                    leading: const CircleAvatar(
+                    leading: CircleAvatar(
                       backgroundColor: Colors.teal,
-                      child: Icon(
+                      child: const Icon(
                         Icons.notifications,
                         color: Colors.white,
                       ),
                     ),
-                    title: Text(item["title"]),
-                    subtitle: Text(item["body"]),
+
+                    title: Text(
+                      item["title"],
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white
+                            : Colors.black,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    subtitle: Text(
+                      item["body"],
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
                   ),
                 ),
               );

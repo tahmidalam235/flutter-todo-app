@@ -18,12 +18,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:
+      isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor:
+        isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
         elevation: 0,
-        title: const SizedBox(),
+        toolbarHeight: 0,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirestoreService().getTasks(),
@@ -59,11 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "Welcome Back",
                             style: TextStyle(
                               fontSize: 18,
-                              color: Colors.grey,
+                              color: isDark ? Colors.white70 : Colors.grey,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -87,9 +90,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                               return Text(
                                 name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : Colors.black,
                                 ),
                               );
                             },
@@ -131,7 +135,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 10),
               Expanded(
-                child: ListView.builder(
+                child: tasks.isEmpty
+                    ? Center(
+                  child: Text(
+                    "No Tasks Yet",
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.grey,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+                    : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: tasks.length,
                   itemBuilder: (context, index) {
@@ -165,6 +180,9 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
+        elevation: 8,
+        backgroundColor: const Color(0xff2E8B72),
+        foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(
             context,

@@ -43,6 +43,8 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final completed = task["completed"] ?? false;
     final priority = task["priority"] ?? "Medium";
     final description = task["description"] ?? "";
@@ -52,7 +54,7 @@ class TaskCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xff1F1F1F) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -65,7 +67,6 @@ class TaskCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           GestureDetector(
             onTap: onTap,
             child: Container(
@@ -99,15 +100,14 @@ class TaskCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
-                  task["title"],
+                  task["title"] ?? "",
                   style: GoogleFonts.inter(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    decoration: completed
-                        ? TextDecoration.lineThrough
-                        : null,
+                    color: isDark ? Colors.white : Colors.black,
+                    decoration:
+                    completed ? TextDecoration.lineThrough : null,
                   ),
                 ),
 
@@ -116,7 +116,9 @@ class TaskCard extends StatelessWidget {
                   Text(
                     description,
                     style: GoogleFonts.inter(
-                      color: Colors.grey.shade600,
+                      color: isDark
+                          ? Colors.grey.shade300
+                          : Colors.grey.shade600,
                       fontSize: 14,
                     ),
                   ),
@@ -126,7 +128,6 @@ class TaskCard extends StatelessWidget {
 
                 Row(
                   children: [
-
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -154,7 +155,9 @@ class TaskCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                          color: Colors.grey.shade600,
+                          color: isDark
+                              ? Colors.grey.shade300
+                              : Colors.grey.shade600,
                           fontSize: 13,
                         ),
                       ),
@@ -166,14 +169,15 @@ class TaskCard extends StatelessWidget {
           ),
 
           PopupMenuButton(
-            icon: const Icon(Icons.more_vert),
+            icon: Icon(
+              Icons.more_vert,
+              color: isDark ? Colors.white : Colors.black,
+            ),
             itemBuilder: (context) => [
-
               PopupMenuItem(
                 onTap: onEdit,
                 child: const Text("Edit"),
               ),
-
               PopupMenuItem(
                 onTap: onDelete,
                 child: const Text("Delete"),

@@ -58,18 +58,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:
+      isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor:
+        isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : Colors.black,
+        ),
+        title: Text(
           "Edit Profile",
-          style: TextStyle(color: Colors.black),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
         ),
       ),
 
@@ -99,8 +107,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             TextField(
               controller: _nameController,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+              ),
               decoration: InputDecoration(
+                filled: true,
+                fillColor:
+                isDark ? const Color(0xff1F1F1F) : Colors.white,
                 labelText: "Full Name",
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -111,11 +128,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             TextField(
               enabled: false,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
               controller: TextEditingController(
                 text: user?.email ?? "",
               ),
               decoration: InputDecoration(
+                filled: true,
+                fillColor:
+                isDark ? const Color(0xff1F1F1F) : Colors.white,
                 labelText: "Email",
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

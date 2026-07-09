@@ -27,6 +27,7 @@ Widget _filterChip({
 required String text,
 required int index,
 }) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
 final selected = selectedFilter == index;
 
 return GestureDetector(
@@ -45,12 +46,12 @@ vertical: 10,
 decoration: BoxDecoration(
 color: selected
 ? const Color(0xff2E8B72)
-: Colors.white,
+    : isDark ? const Color(0xff1E1E1E) : Colors.white,
 borderRadius: BorderRadius.circular(30),
 border: Border.all(
 color: selected
 ? const Color(0xff2E8B72)
-: Colors.grey.shade300,
+    : isDark ? Colors.grey.shade700 : Colors.grey.shade300,
 ),
 ),
 child: Text(
@@ -59,7 +60,7 @@ style: GoogleFonts.inter(
 fontWeight: FontWeight.w600,
 color: selected
 ? Colors.white
-: Colors.black87,
+    : isDark ? Colors.white : Colors.black87,
 ),
 ),
 ),
@@ -68,17 +69,20 @@ color: selected
 
 @override
 Widget build(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   return Scaffold(
-    backgroundColor: const Color(0xffF6F7FB),
+    backgroundColor:
+    isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
 
     appBar: AppBar(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:
+      isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       leading: IconButton(
-        icon: const Icon(
+        icon: Icon(
           Icons.arrow_back_ios_new_rounded,
-          color: Colors.black,
+          color: isDark ? Colors.white : Colors.black,
         ),
         onPressed: () {
           Navigator.pop(context);
@@ -89,7 +93,7 @@ Widget build(BuildContext context) {
         style: GoogleFonts.inter(
           fontSize: 30,
           fontWeight: FontWeight.w800,
-          color: Colors.black,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
       centerTitle: false,
@@ -157,11 +161,11 @@ child: tasks.isEmpty
 ? Center(
 child: Text(
 "No Tasks Found",
-style: GoogleFonts.inter(
-fontSize: 18,
-fontWeight:
-FontWeight.w600,
-),
+  style: GoogleFonts.inter(
+    fontSize: 18,
+    fontWeight: FontWeight.w600,
+    color: isDark ? Colors.white : Colors.black,
+  ),
 ),
 )
 : ListView.builder(

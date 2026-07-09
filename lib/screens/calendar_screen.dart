@@ -39,14 +39,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:
+      isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor:
+        isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
         elevation: 0,
         centerTitle: true,
-        title: const Text("Calendar",
-            style: TextStyle(color: Colors.black)),
+        title: Text(
+          "Calendar",
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -55,7 +62,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             Text(
               "${_month(selectedDate.month)} ${selectedDate.year}",
-              style: const TextStyle(color: Colors.grey, fontSize: 17),
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.grey,
+                fontSize: 17,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -88,8 +98,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
             const SizedBox(height: 30),
             Text(
               "Tasks for ${selectedDate.day} ${_month(selectedDate.month)}",
-              style: const TextStyle(
-                  fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
             const SizedBox(height: 15),
             Expanded(
@@ -114,13 +127,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   }).toList();
 
                   if (docs.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         "No Tasks Available",
                         style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600),
-                      ),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                        ),
                     );
                   }
 
@@ -129,6 +144,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     itemBuilder: (context, index) {
                       final task = docs[index];
                       return Card(
+                        color: isDark ? const Color(0xff1F1F1F) : Colors.white,
                         margin:
                         const EdgeInsets.only(bottom: 15),
                         shape: RoundedRectangleBorder(
@@ -137,17 +153,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.teal.shade50,
+                            backgroundColor:
+                            isDark ? Colors.teal.shade900 : Colors.teal.shade50,
                             child: const Icon(
                               Icons.calendar_today,
                               color: Colors.teal,
                             ),
                           ),
 
-                          title: Text(task["title"]),
+                          title: Text(
+                            task["title"],
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
 
                           subtitle: Text(
                             "${task["category"]} • ${task["time"]}",
+                            style: TextStyle(
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
                           ),
 
                           trailing: Icon(
@@ -172,6 +197,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _dayWidget(DateTime date) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final selected =
         date.year == selectedDate.year &&
             date.month == selectedDate.month &&
@@ -193,9 +219,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Text(
             _weekday(date.weekday),
             style: TextStyle(
-                color: selected
-                    ? Colors.white
-                    : Colors.grey),
+              color: selected
+                  ? Colors.white
+                  : (isDark ? Colors.white70 : Colors.grey),),
           ),
           const SizedBox(height: 5),
           Text(
@@ -205,7 +231,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               fontWeight: FontWeight.bold,
               color: selected
                   ? Colors.white
-                  : Colors.black,
+                  : (isDark ? Colors.white : Colors.black),
             ),
           ),
         ],

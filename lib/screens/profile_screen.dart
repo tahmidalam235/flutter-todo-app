@@ -1,37 +1,43 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'notification_screen.dart';
 
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor:
+      isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor:
+        isDark ? const Color(0xff121212) : const Color(0xffF6F7FB),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
+            color: isDark ? Colors.white : Colors.black,
           ),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        title: const Text(
+        title: Text(
           "Profile",
           style: TextStyle(
-            color: Colors.black,
+            color: isDark ? Colors.white : Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -65,7 +71,7 @@ class ProfileScreen extends StatelessWidget {
                 : ((completed / tasks.length) * 100).round();
 
             return ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
               children: [
 
                 CircleAvatar(
@@ -88,9 +94,10 @@ class ProfileScreen extends StatelessWidget {
                 Center(
                   child: Text(
                     FirebaseAuth.instance.currentUser?.displayName ?? "Unknown User",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
                 ),
@@ -137,6 +144,7 @@ class ProfileScreen extends StatelessWidget {
                         completed.toString(),
                         "Completed",
                         Colors.green,
+                        isDark,
                       ),
                     ),
 
@@ -147,6 +155,7 @@ class ProfileScreen extends StatelessWidget {
                         pending.toString(),
                         "Pending",
                         Colors.orange,
+                        isDark,
                       ),
                     ),
 
@@ -157,6 +166,7 @@ class ProfileScreen extends StatelessWidget {
                         "$productivity%",
                         "Productivity",
                         Colors.teal,
+                        isDark,
                       ),
                     ),
 
@@ -165,10 +175,10 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 35),
 
-                const Text(
+                Text(
                   "SETTINGS",
                   style: TextStyle(
-                    color: Colors.grey,
+                    color: isDark ? Colors.white70 : Colors.grey,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -176,6 +186,9 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 15),
 
                 Card(
+                  color: isDark
+                      ? const Color(0xff1F1F1F)
+                      : Colors.white,
                   elevation: 0,
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
@@ -186,10 +199,16 @@ class ProfileScreen extends StatelessWidget {
                       Icons.notifications_outlined,
                       color: Colors.teal,
                     ),
-                    title: const Text("Notifications"),
-                    trailing: const Icon(
+                    title: Text(
+                      "Notifications",
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    trailing: Icon(
                       Icons.arrow_forward_ios,
                       size: 16,
+                      color: isDark ? Colors.white70 : Colors.black54,
                     ),
                     onTap: () {
                       Navigator.push(
@@ -202,19 +221,47 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
 
-                settingsTile(
-                  Icons.palette_outlined,
-                  "Appearance",
+                Card(
+                  color: isDark
+                      ? const Color(0xff1F1F1F)
+                      : Colors.white,
+                  elevation: 0,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Consumer<ThemeProvider>(
+                    builder: (context, themeProvider, child) {
+                      return SwitchListTile(
+                        secondary: const Icon(
+                          Icons.dark_mode_outlined,
+                          color: Colors.teal,
+                        ),
+                        title: Text(
+                          "Dark Mode",
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        value: themeProvider.isDarkMode,
+                        onChanged: (value) {
+                          themeProvider.toggleTheme(value);
+                        },
+                      );
+                    },
+                  ),
                 ),
 
                 settingsTile(
                   Icons.help_outline,
                   "Help & Support",
+                  isDark,
                 ),
 
                 settingsTile(
                   Icons.info_outline,
                   "About",
+                  isDark,
                 ),
 
                 const SizedBox(height: 25),
@@ -259,8 +306,16 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget statCard(String value, String title, Color color) {
+  Widget statCard(
+      String value,
+      String title,
+      Color color,
+      bool isDark,
+      ) {
     return Card(
+      color: isDark
+          ? const Color(0xff1F1F1F)
+          : Colors.white,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
@@ -285,8 +340,8 @@ class ProfileScreen extends StatelessWidget {
 
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.grey,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.grey,
               ),
             ),
 
@@ -296,8 +351,15 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget settingsTile(IconData icon, String title) {
+  Widget settingsTile(
+      IconData icon,
+      String title,
+      bool isDark,
+      ) {
     return Card(
+      color: isDark
+          ? const Color(0xff1F1F1F)
+          : Colors.white,
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
@@ -308,9 +370,15 @@ class ProfileScreen extends StatelessWidget {
           icon,
           color: Colors.teal,
         ),
-        title: Text(title),
-        trailing: const Icon(
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        trailing: Icon(
           Icons.arrow_forward_ios,
+          color: isDark ? Colors.white70 : Colors.black54,
           size: 16,
         ),
       ),

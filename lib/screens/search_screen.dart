@@ -18,18 +18,23 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor: isDark
+          ? const Color(0xff121212)
+          : const Color(0xffF6F7FB),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xffF6F7FB),
+        backgroundColor: isDark
+            ? const Color(0xff121212)
+            : const Color(0xffF6F7FB),
         elevation: 0,
         scrolledUnderElevation: 0,
 
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
+            color: isDark ? Colors.white : Colors.black,
           ),
           onPressed: () {
             Navigator.pop(context);
@@ -39,7 +44,7 @@ class _SearchScreenState extends State<SearchScreen> {
         title: Text(
           "Search Tasks",
           style: GoogleFonts.inter(
-            color: Colors.black,
+            color: isDark ? Colors.white : Colors.black,
             fontWeight: FontWeight.w700,
             fontSize: 20,
           ),
@@ -55,13 +60,21 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: searchController,
 
               autofocus: true,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+              ),
 
               decoration: InputDecoration(
                 hintText: "Search by title or category",
 
-                hintStyle: GoogleFonts.inter(),
+                hintStyle: GoogleFonts.inter(
+                  color: isDark ? Colors.white54 : Colors.grey,
+                ),
 
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: isDark ? Colors.white70 : Colors.grey,
+                ),
 
                 suffixIcon: search.isEmpty
                     ? null
@@ -79,7 +92,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
                 filled: true,
 
-                fillColor: Colors.white,
+                fillColor: isDark
+                    ? const Color(0xff1F1F1F)
+                    : Colors.white,
 
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(18),
@@ -132,6 +147,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             style: GoogleFonts.inter(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
 
@@ -140,7 +156,9 @@ class _SearchScreenState extends State<SearchScreen> {
                           Text(
                             "Try another keyword",
                             style: GoogleFonts.inter(
-                              color: Colors.grey.shade600,
+                              color: isDark
+                                  ? Colors.white70
+                                  : Colors.grey.shade600,
                             ),
                           ),
                         ],
@@ -160,7 +178,9 @@ class _SearchScreenState extends State<SearchScreen> {
                         padding: const EdgeInsets.all(16),
 
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: isDark
+                              ? const Color(0xff1F1F1F)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(18),
 
                           boxShadow: [
@@ -194,6 +214,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
+                                      color: isDark ? Colors.white : Colors.black,
                                     ),
                                   ),
 
@@ -203,7 +224,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                     task["category"],
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
-                                      color: Colors.grey.shade600,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.grey.shade600,
                                     ),
                                   ),
                                 ],

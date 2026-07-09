@@ -95,11 +95,26 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xffF6F7FB),
+      backgroundColor: isDark
+          ? const Color(0xff121212)
+          : const Color(0xffF6F7FB),
 
       appBar: AppBar(
-        title: const Text("New Task"),
+        backgroundColor: isDark
+            ? const Color(0xff121212)
+            : const Color(0xffF6F7FB),
+        elevation: 0,
+        title: Text(
+          "New Task",
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : Colors.black,
+        ),
         centerTitle: true,
       ),
 
@@ -110,17 +125,29 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            const Text(
+            Text(
               "Task Title",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
 
             const SizedBox(height: 8),
 
             TextField(
               controller: titleController,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+              ),
               decoration: InputDecoration(
                 hintText: "Enter task title",
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.white54 : Colors.grey,
+                ),
+                filled: true,
+                fillColor:
+                isDark ? const Color(0xff1F1F1F) : Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -129,9 +156,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               "Description",
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
 
             const SizedBox(height: 8),
@@ -139,8 +169,17 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             TextField(
               controller: descriptionController,
               maxLines: 3,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+              ),
               decoration: InputDecoration(
                 hintText: "Task description",
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.white54 : Colors.grey,
+                ),
+                filled: true,
+                fillColor:
+                isDark ? const Color(0xff1F1F1F) : Colors.white,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -150,8 +189,22 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             const SizedBox(height: 20),
 
             DropdownButtonFormField<String>(
+              dropdownColor:
+              isDark ? const Color(0xff1F1F1F) : Colors.white,
+
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+              ),
               value: category,
               decoration: InputDecoration(
+                filled: true,
+                fillColor:
+                isDark ? const Color(0xff1F1F1F) : Colors.white,
+
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey,
+                ),
+
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -174,8 +227,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             const SizedBox(height: 20),
 
             DropdownButtonFormField<String>(
+              dropdownColor:
+              isDark ? const Color(0xff1F1F1F) : Colors.white,
+
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black,
+              ),
               value: priority,
               decoration: InputDecoration(
+                filled: true,
+                fillColor:
+                isDark ? const Color(0xff1F1F1F) : Colors.white,
+
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -198,6 +264,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                  isDark ? Colors.white : Colors.black,
+                  side: BorderSide(
+                    color: isDark ? Colors.white24 : Colors.grey,
+                  ),
+                ),
                 icon: const Icon(Icons.access_time),
                 label: Text(
                   selectedTime == null
@@ -212,6 +285,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                  isDark ? Colors.white : Colors.black,
+                  side: BorderSide(
+                    color: isDark ? Colors.white24 : Colors.grey,
+                  ),
+                ),
                 icon: const Icon(Icons.calendar_today),
                 label: Text(
                   "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
