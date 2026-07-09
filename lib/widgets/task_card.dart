@@ -50,20 +50,27 @@ class TaskCard extends StatelessWidget {
     final description = task["description"] ?? "";
     final category = task["category"] ?? "";
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(18),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: const EdgeInsets.only(bottom: 18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xff1F1F1F) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
+        border: Border.all(
+          color: completed
+              ? Colors.green.withOpacity(.18)
+              : Colors.grey.withOpacity(.08),
+        ),
       ),
+      padding: const EdgeInsets.all(18),
+
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -94,7 +101,7 @@ class TaskCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 14),
+          const SizedBox(width: 18),
 
           Expanded(
             child: Column(
@@ -102,10 +109,10 @@ class TaskCard extends StatelessWidget {
               children: [
                 Text(
                   task["title"] ?? "",
-                  style: GoogleFonts.inter(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black,
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).colorScheme.onSurface,
                     decoration:
                     completed ? TextDecoration.lineThrough : null,
                   ),
@@ -115,7 +122,7 @@ class TaskCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     description,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       color: isDark
                           ? Colors.grey.shade300
                           : Colors.grey.shade600,
@@ -124,7 +131,7 @@ class TaskCard extends StatelessWidget {
                   ),
                 ],
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 18),
 
                 Row(
                   children: [
@@ -169,9 +176,10 @@ class TaskCard extends StatelessWidget {
           ),
 
           PopupMenuButton(
+            splashRadius: 20,
             icon: Icon(
-              Icons.more_vert,
-              color: isDark ? Colors.white : Colors.black,
+              Icons.more_vert_rounded,
+              color: Colors.grey.shade500,
             ),
             itemBuilder: (context) => [
               PopupMenuItem(
