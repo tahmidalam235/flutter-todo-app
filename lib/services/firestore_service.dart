@@ -61,4 +61,16 @@ class FirestoreService {
   Future<void> deleteTask(String id) async {
     await _firestore.collection("tasks").doc(id).delete();
   }
+  Future<void> addNotification({
+    required String title,
+    required String body,
+  }) async {
+    await _firestore.collection("notifications").add({
+      "uid": _auth.currentUser!.uid,
+      "title": title,
+      "body": body,
+      "createdAt": FieldValue.serverTimestamp(),
+      "read": false,
+    });
+  }
 }

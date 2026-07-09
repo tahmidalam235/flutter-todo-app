@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/firestore_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../services/notification_service.dart';
 
 class AddTaskScreen extends StatefulWidget {
 
@@ -240,6 +241,34 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       date:
                       "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}",
                     );
+                    if (selectedTime != null) {
+                      final notificationDateTime = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        selectedTime!.hour,
+                        selectedTime!.minute,
+                      );
+
+                      if (notificationDateTime.isAfter(DateTime.now())) {
+                        try {
+                          await NotificationService.scheduleNotification(
+                            id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+                            title: titleController.text.trim(),
+                            body: "It's time to complete your task.",
+                            dateTime: notificationDateTime,
+                          );
+                          await FirestoreService().addNotification(
+                            title: titleController.text.trim(),
+                            body:
+                            "Reminder scheduled for ${selectedTime!.format(context)} on ${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
+                          );
+
+                        } catch (e) {
+                          debugPrint("Notification Error: $e");
+                        }
+                      }
+                    }
 
                   } else {
 

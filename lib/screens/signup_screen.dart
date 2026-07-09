@@ -104,13 +104,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         onPressed: loading
                             ? null
                             : () async {
+                          final name = nameController.text.trim();
+                          final email = emailController.text.trim();
+                          final password = passwordController.text.trim();
+
+                          if (name.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please enter your full name."),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Please enter a valid email address."),
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (password.length < 6) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Password must be at least 6 characters."),
+                              ),
+                            );
+                            return;
+                          }
+
+                          setState(() => loading = true);
                           setState(() => loading = true);
 
                           try {
                             await AuthService().signUp(
-                              name: nameController.text.trim(),
-                              email: emailController.text.trim(),
-                              password: passwordController.text.trim(),
+                              name: name,
+                              email: email,
+                              password: password,
                             );
 
                             setState(() => loading = false);
