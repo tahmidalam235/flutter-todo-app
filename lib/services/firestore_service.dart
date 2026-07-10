@@ -36,6 +36,10 @@ class FirestoreService {
   Future<void> updateTask(String id, bool completed) async {
     await _firestore.collection("tasks").doc(id).update({
       "completed": completed,
+
+      "completedAt": completed
+          ? FieldValue.serverTimestamp()
+          : null,
     });
   }
 

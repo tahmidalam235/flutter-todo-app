@@ -50,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController searchController = TextEditingController();
 
   String searchText = "";
+  String sortType = "Newest";
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -110,6 +111,67 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+  void _showSortBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(28),
+        ),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 10,
+                bottom: MediaQuery.of(context).padding.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  _sortTile("Newest"),
+                  _sortTile("Oldest"),
+                  _sortTile("High"),
+                  _sortTile("Medium"),
+                  _sortTile("Low"),
+                  _sortTile("A-Z"),
+                  _sortTile("Z-A"),
+                  _sortTile("Completed"),
+                  _sortTile("Pending"),
+
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  Widget _sortTile(String title) {
+    return ListTile(
+      leading: Icon(
+        sortType == title
+            ? Icons.check_circle
+            : Icons.circle_outlined,
+        color: const Color(0xff2E8B72),
+      ),
+      title: Text(title),
+      onTap: () {
+        setState(() {
+          sortType = title;
+        });
+
+        Navigator.pop(context);
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -131,134 +193,155 @@ class _HomeScreenState extends State<HomeScreen> {
 
           List tasks = snapshot.data!.docs;
 
-          tasks.sort((a, b) {
-            final aTime = a["createdAt"] as Timestamp?;
-            final bTime = b["createdAt"] as Timestamp?;
+          switch (sortType) {
+            case "Newest":
+              tasks.sort((a, b) =>
+                  (b["createdAt"] as Timestamp)
+                      .compareTo(a["createdAt"] as Timestamp));
+              break;
 
-            if (aTime == null || bTime == null) return 0;
+            case "Oldest":
+              tasks.sort((a, b) =>
+                  (a["createdAt"] as Timestamp)
+                      .compareTo(b["createdAt"] as Timestamp));
+              break;
 
-            return bTime.compareTo(aTime);
-          });
+            case "A-Z":
+              tasks.sort((a, b) =>
+                  a["title"]
+                      .toString()
+                      .toLowerCase()
+                      .compareTo(
+                    b["title"].toString().toLowerCase(),
+                  ));
+              break;
+
+            case "Z-A":
+              tasks.sort((a, b) =>
+                  b["title"]
+                      .toString()
+                      .toLowerCase()
+                      .compareTo(
+                    a["title"].toString().toLowerCase(),
+                  ));
+              break;
+
+            case "High":
+
+              const priority = {
+                "High": 3,
+                "Medium": 2,
+                "Low": 1,
+              };
+
+              tasks.sort((a, b) =>
+                  (priority[b["priority"]] ?? 0)
+                      .compareTo(priority[a["priority"]] ?? 0));
+              break;
+            case "Medium":
+              const priority = {
+                "High": 3,
+                "Medium": 2,
+                "Low": 1,
+              };
+
+              tasks.sort(
+                    (a, b) => (priority[b["priority"]] ?? 0)
+                    .compareTo(priority[a["priority"]] ?? 0),
+              );
+              break;
+
+            case "Low":
+              const priority = {
+                "Low": 1,
+                "Medium": 2,
+                "High": 3,
+              };
+
+              tasks.sort((a, b) =>
+                  (priority[a["priority"]] ?? 0)
+                      .compareTo(priority[b["priority"]] ?? 0));
+              break;
+
+            case "Completed":
+              tasks.sort((a, b) =>
+                  (b["completed"] ? 1 : 0)
+                      .compareTo(a["completed"] ? 1 : 0));
+              break;
+
+            case "Pending":
+              tasks.sort((a, b) =>
+                  (a["completed"] ? 1 : 0)
+                      .compareTo(b["completed"] ? 1 : 0));
+              break;
+          }
 
           if (selectedFilter == 1) {
             tasks = tasks.where((e) => e["completed"] == true).toList();
+          } else if (selectedFilter == 1) {
+            tasks = tasks.where((e) => e["completed"] == true).toList();
           } else if (selectedFilter == 2) {
-            if (searchText.isNotEmpty) {
-              tasks = tasks.where((task) {
-                final title =
-                task["title"].toString().toLowerCase();
-
-                final category =
-                task["category"].toString().toLowerCase();
-
-                return title.contains(searchText) ||
-                    category.contains(searchText);
-              }).toList();
-            }
             tasks = tasks.where((e) => e["completed"] == false).toList();
+          }
+
+          if (searchText.isNotEmpty) {
+            tasks = tasks.where((task) {
+              final title =
+              task["title"].toString().toLowerCase();
+
+              final category =
+              task["category"].toString().toLowerCase();
+
+              return title.contains(searchText) ||
+                  category.contains(searchText);
+            }).toList();
           }
 
           return Column(
             children: [
+
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 18),
-                child: StreamBuilder<DocumentSnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection("users")
-                      .doc(FirebaseAuth.instance.currentUser!.uid)
-                      .snapshots(),
-                  builder: (context, userSnapshot) {
-                    if (!userSnapshot.hasData) {
-                      return const SizedBox();
-                    }
-
-                    final data =
-                    userSnapshot.data!.data() as Map<String, dynamic>;
-
-                    String name =
-                    (data["name"] ?? "User").toString();
-
-                    name =
-                        name[0].toUpperCase() + name.substring(1);
-
-                    return Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xff2E8B72),
-                            Color(0xff49B59B),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            searchText = value.toLowerCase();
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: "Search your tasks...",
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xff1E1E1E)
+                              : Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xff2E8B72)
-                                .withValues(alpha: .25),
-                            blurRadius: 22,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
+                    ),
 
-                                Text(
-                                  "${getGreeting()} 👋",
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                    const SizedBox(width: 12),
 
-                                const SizedBox(height: 8),
-
-                                Text(
-                                  name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                Text(
-                                  getTodayDate(),
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          CircleAvatar(
-                            radius: 34,
-                            backgroundColor: Colors.white24,
-                            child: Text(
-                              name.substring(0, 1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 28,
-                              ),
-                            ),
-                          ),
-                        ],
+                    Container(
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xff1E1E1E)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(18),
                       ),
-                    );
-                  },
+                      child: IconButton(
+                        icon: const Icon(Icons.sort_rounded),
+                        onPressed: _showSortBottomSheet,
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
@@ -362,32 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
 
-                          Padding(
-                            padding:
-                            const EdgeInsets.symmetric(horizontal: 8),
-                            child: TextField(
-                              controller: searchController,
-                              onChanged: (value) {
-                                setState(() {
-                                  searchText = value.toLowerCase();
-                                });
-                              },
-                              decoration: InputDecoration(
-                                hintText: "Search your tasks...",
-                                prefixIcon:
-                                const Icon(Icons.search_rounded),
-                                filled: true,
-                                fillColor: isDark
-                                    ? const Color(0xff1E1E1E)
-                                    : Colors.white,
-                                border: OutlineInputBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(18),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                          ),
+
 
                           const SizedBox(height: 22),
                         ],

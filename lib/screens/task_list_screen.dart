@@ -8,12 +8,12 @@ import 'add_task_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
   final String title;
-  final bool? completed;
+  final int initialFilter;
 
   const TaskListScreen({
     super.key,
     required this.title,
-    this.completed,
+    this.initialFilter = 0,
   });
 
   @override
@@ -21,7 +21,13 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
-int selectedFilter = 0;
+  int selectedFilter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedFilter = widget.initialFilter;
+  }
 
 Widget _filterChip({
 required String text,

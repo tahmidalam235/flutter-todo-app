@@ -12,7 +12,12 @@ import 'package:intl/intl.dart';
 import 'search_screen.dart';
 import 'task_list_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:percent_indicator/circular_percent_indicator.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'analytics_screen.dart';
+import 'productivity_screen.dart';
+import 'weekly_activity_screen.dart';
+import 'category_distribution_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -53,7 +58,11 @@ String get currentDate =>
 
 String get currentTime =>
     DateFormat('hh:mm a').format(_currentTime);
-
+  List<double> weeklyData = List.filled(7, 0);
+  Map<String, int> categoryCount = {};
+  int totalTasks = 0;
+  int completedTasks = 0;
+  int pendingTasks = 0;
 @override
 Widget build(BuildContext context) {
   final user = FirebaseAuth.instance.currentUser;
@@ -93,21 +102,57 @@ return const Center(
 child: CircularProgressIndicator(),
 );
 }
-
 final tasks = snapshot.data!.docs;
-print("Current User: ${FirebaseAuth.instance.currentUser!.uid}");
 
-for (var task in tasks) {
-  print(task.data());
+weeklyData = List.filled(7, 0);
+
+final now = DateTime.now();
+
+final startOfWeek = DateTime(
+  now.year,
+  now.month,
+  now.day,
+).subtract(Duration(days: now.weekday - 1));
+
+final endOfWeek = startOfWeek.add(const Duration(days: 7));
+
+for (final doc in tasks) {
+  final data = doc.data() as Map<String, dynamic>;
+
+  if (data["completed"] != true) continue;
+
+  final Timestamp? timestamp = data["completedAt"];
+
+  if (timestamp == null) continue;
+
+  final completedDate = timestamp.toDate();
+
+  if (completedDate.isBefore(startOfWeek) ||
+      completedDate.isAfter(endOfWeek.subtract(const Duration(seconds: 1)))) {
+    continue;
+  }
+
+  final dayIndex = completedDate.weekday - 1;
+
+  if (dayIndex >= 0 && dayIndex < 7) {
+    weeklyData[dayIndex] += 1;
+  }
 }
 
-final totalTasks = tasks.length;
+totalTasks = tasks.length;
 
-final completedTasks = tasks.where((task) {
-return task["completed"] == true;
-}).length;
+completedTasks =
+    tasks.where((e) => (e.data() as Map<String, dynamic>)["completed"] == true).length;
 
-final pendingTasks = totalTasks - completedTasks;
+pendingTasks = totalTasks - completedTasks;
+
+categoryCount = {};
+
+for (final doc in tasks) {
+  final data = doc.data() as Map<String, dynamic>;
+  final category = data["category"] ?? "Other";
+  categoryCount[category] = (categoryCount[category] ?? 0) + 1;
+}
 final filteredTasks = tasks.where((task) {
 
   final title = task["title"].toString().toLowerCase();
@@ -129,89 +174,60 @@ return ListView(
 padding: const EdgeInsets.all(18),
 children: [
 
-  Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
+
+
+
+  Column(
     children: [
 
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      Row(
+        children: [
 
-            Text(
-              "Welcome Back 👋",
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
-                letterSpacing: .3,
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Image.asset(
+                "assets/logo/piuuuu_logo_text.png",
+                height: 52,
+                fit: BoxFit.contain,
               ),
             ),
+          ),
 
-            const SizedBox(height: 6),
-
-            Text(
-              displayName,
-              style: GoogleFonts.inter(
-                fontSize: 32,
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface,
-                height: 1.1,
+          InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
+              );
+            },
+            child: CircleAvatar(
+              radius: 22,
+              backgroundColor: const Color(0xff2E8B72),
+              child: Text(
+                displayName[0].toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            const SizedBox(height: 10),
+          ),
 
-            Row(
-              children: [
+          const SizedBox(width: 10),
 
-                Icon(
-                  Icons.calendar_today_rounded,
-                  size: 16,
-                  color: Colors.grey.shade600,
-                ),
+          IconButton(
+            onPressed: _showMoreMenu,
+            icon: const Icon(Icons.more_vert_rounded),
+          ),
 
-                const SizedBox(width: 6),
-
-                Text(
-                  currentDate,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
-              ],
-            ),
-
-            const SizedBox(height: 5),
-
-            Row(
-              children: [
-
-                const Icon(
-                  Icons.access_time_filled_rounded,
-                  size: 17,
-                  color: Color(0xff2E8B72),
-                ),
-
-                const SizedBox(width: 6),
-
-                Text(
-                  currentTime,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: const Color(0xff2E8B72),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-              ],
-            ),
-
-          ],
-        ),
+        ],
       ),
+
+      const SizedBox(height: 22),
 
       InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -219,73 +235,27 @@ children: [
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const ProfileScreen(),
+              builder: (_) => const SearchScreen(),
             ),
           );
         },
-        child: Container(
-          width: 58,
-          height: 58,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: const LinearGradient(
-              colors: [
-                Color(0xff36C2A6),
-                Color(0xff2E8B72),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.teal.withOpacity(.25),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-            displayName[0],
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
+        child: IgnorePointer(
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: "Search your tasks...",
+              prefixIcon: const Icon(Icons.search_rounded),
+              filled: true,
+              fillColor: Theme.of(context).cardColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(18),
+                borderSide: BorderSide.none,
               ),
             ),
-          ),
-        ),
-      )
-
-    ],
-  ),
-
-const SizedBox(height: 25),
-
-  InkWell(
-    borderRadius: BorderRadius.circular(18),
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const SearchScreen(),
-        ),
-      );
-    },
-    child: IgnorePointer(
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: "Search Tasks",
-          prefixIcon: const Icon(Icons.search),
-          filled: true,
-          fillColor: Theme.of(context).cardColor,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
-            borderSide: BorderSide.none,
           ),
         ),
       ),
-    ),
+
+    ],
   ),
 
 const SizedBox(height: 25),
@@ -293,41 +263,46 @@ const SizedBox(height: 25),
 Row(
 children: [
 
-Expanded(
-child: statCard(
-  totalTasks.toString(),
-  "Total",
-  Colors.teal,
-  null,
-),
-),
+  Expanded(
+    child: statCard(
+      totalTasks.toString(),
+      "Total",
+      Colors.teal,
+      0,
+    ),
+  ),
 
 const SizedBox(width: 15),
 
-Expanded(
-child: statCard(
-  completedTasks.toString(),
-  "Completed",
-  Colors.green,
-  true,
-),
-),
+  Expanded(
+    child: statCard(
+      completedTasks.toString(),
+      "Completed",
+      Colors.green,
+      1,
+    ),
+  ),
 
 const SizedBox(width: 15),
 
-Expanded(
-child: statCard(
-  pendingTasks.toString(),
-  "Pending",
-  Colors.orange,
-  false,
-),
-),
+  Expanded(
+    child: statCard(
+      pendingTasks.toString(),
+      "Pending",
+      Colors.orange,
+      2,
+    ),
+  ),
 
 ],
 ),
 
+
+
+  const SizedBox(height: 30),
 const SizedBox(height: 25),
+
+
   Text(
     "Categories",
     style: TextStyle(
@@ -341,6 +316,7 @@ const SizedBox(height: 25),
 
   SizedBox(
     height: 45,
+
     child: ListView(
       scrollDirection: Axis.horizontal,
       children: [
@@ -404,6 +380,7 @@ const SizedBox(height: 25),
       ),
     ),
   )
+
       : ListView.builder(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
@@ -429,12 +406,12 @@ const SizedBox(height: 25),
 );
 }
 
-Widget statCard(
-    String number,
-    String title,
-    Color color,
-    bool? completed,
-    ) {
+  Widget statCard(
+      String number,
+      String title,
+      Color color,
+      int initialFilter,
+      ) {
   return InkWell(
       borderRadius: BorderRadius.circular(22),
       onTap: () {
@@ -442,9 +419,10 @@ Widget statCard(
           context,
           MaterialPageRoute(
             builder: (_) => TaskListScreen(
-              title: "$title Tasks",
-              completed: completed,
-            ),
+              title: "My Tasks",
+              initialFilter: initialFilter,
+            )
+
           ),
         );
       },
@@ -580,12 +558,10 @@ Widget taskTile(
             width: 1.5,
           ),
           onChanged: (value) async {
-            await FirebaseFirestore.instance
-                .collection("tasks")
-                .doc(id)
-                .update({
-              "completed": value,
-            });
+            await FirestoreService().updateTask(
+              id,
+              value ?? false,
+            );
 
             setState(() {});
           },
@@ -660,4 +636,123 @@ Widget taskTile(
     ),
   );
 }
+  void _showMoreMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(28),
+        ),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+
+                _menuTile(
+                  Icons.bar_chart_rounded,
+                  "Productivity Score",
+                      () {
+                    Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProductivityScreen(
+                          totalTasks: totalTasks,
+                          completedTasks: completedTasks,
+                          pendingTasks: pendingTasks,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                _menuTile(
+                  Icons.show_chart_rounded,
+                  "Weekly Activity",
+                      () {
+                    Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WeeklyActivityScreen(
+                          weeklyData: weeklyData,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                _menuTile(
+                  Icons.pie_chart_rounded,
+                  "Category Distribution",
+                      () {
+                    Navigator.pop(context);
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CategoryDistributionScreen(
+                          categoryCount: categoryCount,
+                          totalTasks: totalTasks,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  Widget _menuTile(
+      IconData icon,
+      String title,
+      VoidCallback onTap,
+      ) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: const Color(0xff2E8B72).withValues(alpha: .12),
+        child: Icon(
+          icon,
+          color: const Color(0xff2E8B72),
+        ),
+      ),
+      title: Text(
+        title,
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      trailing: const Icon(
+        Icons.arrow_forward_ios_rounded,
+        size: 16,
+      ),
+      onTap: onTap,
+    );
+  }
+  BarChartGroupData _bar(int x, double y) {
+    return BarChartGroupData(
+      x: x,
+      barRods: [
+        BarChartRodData(
+          toY: y,
+          width: 18,
+          borderRadius: BorderRadius.circular(8),
+          color: const Color(0xff2E8B72),
+        ),
+      ],
+    );
+  }
 }
