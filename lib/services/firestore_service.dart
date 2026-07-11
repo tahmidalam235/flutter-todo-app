@@ -6,12 +6,17 @@ class FirestoreService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Stream<QuerySnapshot> getTasks() {
+    final user = _auth.currentUser;
+
+    if (user == null) {
+      return const Stream.empty();
+    }
+
     return _firestore
         .collection("tasks")
-        .where("uid", isEqualTo: _auth.currentUser!.uid)
+        .where("uid", isEqualTo: user.uid)
         .snapshots();
   }
-
   Future<void> addTask({
     required String title,
     required String description,
@@ -28,7 +33,7 @@ class FirestoreService {
       "time": time,
       "date": date,
       "completed": false,
-      "uid": _auth.currentUser!.uid,
+      "uid": _auth.currentUser?.uid ?? "",
       "createdAt": FieldValue.serverTimestamp(),
     });
   }
@@ -70,7 +75,7 @@ class FirestoreService {
     required String body,
   }) async {
     await _firestore.collection("notifications").add({
-      "uid": _auth.currentUser!.uid,
+      "uid": _auth.currentUser?.uid ?? "",
       "title": title,
       "body": body,
       "createdAt": FieldValue.serverTimestamp(),

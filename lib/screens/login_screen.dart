@@ -17,7 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordController = TextEditingController();
 
   bool loading = false;
-  bool obscure = true;
+  bool obscure = false;
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     TextField(
                       controller: passwordController,
-                      obscureText: obscure,
+                      obscureText: !obscure,
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black,
                       ),

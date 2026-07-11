@@ -43,12 +43,42 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final completed = task["completed"] ?? false;
     final priority = task["priority"] ?? "Medium";
     final description = task["description"] ?? "";
     final category = task["category"] ?? "";
+    String formattedDate = "";
+
+    final dateString = task["date"]?.toString() ?? "";
+
+    if (dateString.isNotEmpty) {
+      try {
+        final date = DateTime.parse(dateString);
+
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+
+        formattedDate =
+        "${date.day.toString().padLeft(2, '0')}-${months[date.month - 1]}";
+      } catch (_) {
+        formattedDate = dateString;
+      }
+    }
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -107,38 +137,27 @@ class TaskCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  task["title"] ?? "",
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
-                    color: Theme.of(context).colorScheme.onSurface,
-                    decoration:
-                    completed ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-
-                if (description.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      color: isDark
-                          ? Colors.grey.shade300
-                          : Colors.grey.shade600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 18),
 
                 Row(
                   children: [
+
+                    Expanded(
+                      child: Text(
+                        task["title"] ?? "",
+                        style: TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          decoration:
+                          completed ? TextDecoration.lineThrough : null,
+                        ),
+                      ),
+                    ),
+
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        horizontal: 12,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: _priorityBg(priority),
@@ -154,23 +173,35 @@ class TaskCard extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(width: 10),
-
-                    Expanded(
-                      child: Text(
-                        "${task["time"] ?? ""} • $category",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          color: isDark
-                              ? Colors.grey.shade300
-                              : Colors.grey.shade600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
+
+                if (description.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.grey.shade300
+                          : Colors.grey.shade600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 10),
+
+                Text(
+                  "$formattedDate • ${task["time"] ?? "No Time"}",
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: isDark
+                        ? Colors.grey.shade300
+                        : Colors.grey.shade600,
+                  ),
+                ),
+
               ],
             ),
           ),
