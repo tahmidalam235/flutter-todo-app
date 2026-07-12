@@ -187,7 +187,7 @@ children: [
             child: Align(
               alignment: Alignment.centerLeft,
               child: Image.asset(
-                "assets/logo/piuuuu_logo_text.png",
+                "assets/logo/taskies_logo.png",
                 height: 52,
                 fit: BoxFit.contain,
               ),
